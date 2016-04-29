@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE sqlMap        
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"        
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">  
+<sqlMap>
+	
+	<typeAlias alias="UrlFilter" type="com.deepspider.pojo.HandledQueue"/>
+	<typeAlias alias="WebNode" type="com.deepspider.pojo.WebNode"/>
+	<typeAlias alias="RequestInfo" type="com.deepspider.pojo.RequestInfo"/>
+	<typeAlias alias="ResponseInfo" type="com.deepspider.pojo.ResponseInfo"/>
+	
+	<!-- 获取过滤去重的URL -->
+	<resultMap id="filterResult" class="UrlFilter">
+		<result property="url" column="urfi_url"/>
+		<result property="urlMD5" column="urfi_url_md5"/>
+		<result property="htmlMD5" column="urfi_html_md5"/>
+	</resultMap>
+	<select id="getUrlFilter" resultMap="filterResult">
+		select * from UrlFilter
+	</select>
+	
+	<!-- 获取目标站点URL -->
+	<select id="getTargetUrl" resultClass="String">
+		select urta_url from UrlTarget
+	</select>
+	
+	<!-- 获取检测更新url和html的md5值 -->
+	<resultMap id="checkUpdate" class="hashmap">
+		<result property="url" column="urfi_url"/>
+		<result property="htmlMD5" column="urfi_html_md5"/>
+		<result property="time" column="urfi_time"/>
+	</resultMap>
+	<select id="getCheckUpdate" resultMap="checkUpdate">
+		select urfi_url,urfi_html_md5,urfi_time from UrlFilter
+	</select>
+	
+	<!-- 插入到已处理URL -->
+	<insert id="insertHandledUrl">
+		insert into UrlFilter(urfi_url, urfi_url_md5,urfi_html_md5,urfi_time) values(#url#,#urlMD5#,#htmlMD5#,#time#)
+	</insert>
+	
+	<!-- 插入到网页节点信息 -->
+	<insert id="insertSpiderData" parameterClass="map">
+		insert into SpiderData(spda_url,spda_ip,spda_host,spda_html,spda_content,spda_protocol,spda_server,spda_frame,spda_recent_update,spda_last_update,spda_istargetnode,spda_targeturl) values(#url#,#ip#,#host#,#html#,#content#,#protocol#,#server#,#frame#,#recenttime#,#lasttime#,#istargetnode#,#targeturl#)
+	</insert>
+	
+	<!-- 更新文本内容 -->
+	<update id="updateHtml" parameterClass="map">
+		update spiderdata set spda_html = #html#, spda_content = "content", spda_recent_update = #recentTime#, spda_last_update = #lastTime# where spda_url = #url#
+	</update>
+	
+	<!-- 更新URL爬取状态 -->
+	<update id="updateStatus" parameterClass="String">
+		update urltarget set urta_status = 1 where urta_url = #url# 
+	</update>
+	
+	<!-- 更新已处理url时间 -->
+	<update id="updateFilterTime" parameterClass="map">
+		update urlfilter set urfi_time = #time#  where urfi_url = #url# 
+	</update>
+</sqlMap>

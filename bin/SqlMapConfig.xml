@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE sqlMapConfig        
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"        
+    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+    
+<sqlMapConfig>
+	<properties resource="db.properties"/>
+	<settings
+		cacheModelsEnabled="true"
+		lazyLoadingEnabled="true"
+		enhancementEnabled="true"
+		useStatementNamespaces="true"
+		/>
+	<transactionManager type="JDBC">
+		<dataSource type="SIMPLE">
+			<property name="JDBC.Driver" value="${driver}"/>
+			<property name="JDBC.ConnectionURL" value="${url}"/>
+			<property name="JDBC.Username" value="${user}"/>
+			<property name="JDBC.Password" value="${password}"/>
+		</dataSource>
+	</transactionManager>
+
+	<sqlMap resource="com/deepspider/pojo/SpiderData.xml"/>
+</sqlMapConfig>
