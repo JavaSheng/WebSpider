@@ -7,11 +7,9 @@ import java.util.ResourceBundle;
 import com.deepspider.pojo.HandledQueue;
 import com.deepspider.queue.BloomFilter;
 import com.deepspider.queue.UnvisitedQueue;
-//import com.deepspider.queue.VisitedQueue;
 import com.deepspider.service.CheckUpdate;
 import com.deepspider.service.ConfigListen;
 import com.deepspider.service.HandleNode;
-//import com.deepspider.util.CalcMD5;
 import com.deepspider.util.SqlConfig;
 import com.deepspider.util.ThreadManage;
 import com.ibatis.sqlmap.client.SqlMapClient;
@@ -47,7 +45,6 @@ public class SpiderStart {
 		 * @author JavaSheng
 		 */
 		UnvisitedQueue unvisitedQueue = new UnvisitedQueue();
-		//VisitedQueue visitedQueue = new VisitedQueue();
 		BloomFilter bloomFilterQueue = new BloomFilter();
 		
 		/**
@@ -61,7 +58,6 @@ public class SpiderStart {
 			if(!handledQueue.isEmpty()){
 				for(HandledQueue queue : handledQueue){
 					bloomFilterQueue.addUrl(queue.getUrl());
-					//visitedQueue.addVisitedUrl(queue.getUrlMD5());
 				}
 			}
 			
@@ -88,9 +84,6 @@ public class SpiderStart {
 			if(!targetUrl.isEmpty()){
 				for(String url : targetUrl){				
 					//判断是否为已处理url
-					//if(!(visitedQueue.containUrl(CalcMD5.getMD5(url)))){
-						//unvisitedQueue.enQueue(url);
-					//}
 					if(!(bloomFilterQueue.containsUrl(url))){
 						unvisitedQueue.enQueue(url);
 					}
@@ -102,7 +95,6 @@ public class SpiderStart {
 				 * 交由爬取线程处理
 				 * @author JavaSheng
 				 */
-				//HandleNode handleNode = new HandleNode(threadManage,unvisitedQueue,visitedQueue);
 				HandleNode handleNode = new HandleNode(threadManage,unvisitedQueue,bloomFilterQueue);
 				threadManage.addTask(handleNode);
 			}
