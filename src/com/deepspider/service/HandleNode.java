@@ -17,8 +17,8 @@ import com.deepspider.pojo.HandledQueue;
 import com.deepspider.pojo.RequestInfo;
 import com.deepspider.pojo.ResponseInfo;
 import com.deepspider.pojo.WebNode;
+import com.deepspider.queue.BloomFilter;
 import com.deepspider.queue.UnvisitedQueue;
-import com.deepspider.queue.VisitedQueue;
 import com.deepspider.rule.FilterTab;
 import com.deepspider.rule.RegexPlugin;
 import com.deepspider.rule.RegexSummary;
@@ -34,15 +34,17 @@ import com.deepspider.util.ThreadManage;
 public class HandleNode implements Runnable{
 	private ThreadManage threadManage;
 	private UnvisitedQueue unvisitedQueue;
-	private VisitedQueue visitedQueue;
+	//private VisitedQueue visitedQueue;
+	private BloomFilter bloomFilterQueue;
 	private List<WebNode> insertQueue = Collections.synchronizedList(new LinkedList<WebNode>());//插入数据库的缓存队列
 	private List<HandledQueue> handledQueue = Collections.synchronizedList(new LinkedList<HandledQueue>());//插入数据库缓存队列
 	private long time;
 	
-	public HandleNode(ThreadManage threadManage, UnvisitedQueue unvisitedQueue, VisitedQueue visitedQueue){
+	public HandleNode(ThreadManage threadManage, UnvisitedQueue unvisitedQueue, BloomFilter bloomFilterQueue){
 		this.threadManage = threadManage;
 		this.unvisitedQueue = unvisitedQueue;
-		this.visitedQueue = visitedQueue;
+		//this.visitedQueue = visitedQueue;
+		this.bloomFilterQueue = bloomFilterQueue;
 	}
 	
 	
@@ -164,7 +166,8 @@ public class HandleNode implements Runnable{
 				
 				insertQueue.add(targetNode);
 				handledQueue.add(handledNode);
-				visitedQueue.addVisitedUrl(targetUrlMD5);
+				//visitedQueue.addVisitedUrl(targetUrlMD5);
+				bloomFilterQueue.addUrl(targetUrl);
 										
 				/**
 				 * 获当前域名下的url，插入到待爬队列中
@@ -175,10 +178,13 @@ public class HandleNode implements Runnable{
 					synchronized(unvisitedQueue){
 						for(int i = 0; i < urlQueue.size(); i++){
 							String url = urlQueue.get(i);
-							String urlMD5 = CalcMD5.getMD5(url);
+							//String urlMD5 = CalcMD5.getMD5(url);
 							
-							if(!visitedQueue.containUrl(urlMD5)){								
-									unvisitedQueue.enQueue(url);								
+							//if(!visitedQueue.containUrl(urlMD5)){								
+									//unvisitedQueue.enQueue(url);								
+							//}
+							if(!bloomFilterQueue.containsUrl(url)){								
+								unvisitedQueue.enQueue(url);								
 							}
 						}
 						
@@ -188,20 +194,12 @@ public class HandleNode implements Runnable{
 					
 				}else{
 					//System.out.println("No suitable node");
-				}
-				//try {
-					/*
-					sqlMap.insert("insertHandledUrl", handledQueue);			
-					sqlMap.update("updateStatus",targetUrl);
-					*/
-					
-					
-				//} catch (SQLException e1) {
-					//e1.printStackTrace();
-				//}
+				}		
+					//sqlMap.update("updateStatus",targetUrl);
 			}else{//未读取到网页内容			
-				String targetUrlMD5 = CalcMD5.getMD5(targetUrl);			
-				visitedQueue.addVisitedUrl(targetUrlMD5);
+				//String targetUrlMD5 = CalcMD5.getMD5(targetUrl);			
+				//visitedQueue.addVisitedUrl(targetUrlMD5);
+				bloomFilterQueue.addUrl(targetUrl);
 			}						
 		}
 		
